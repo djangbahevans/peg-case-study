@@ -1,2 +1,4 @@
-fastapi[all]
 alembic
+fastapi[all]
+lark
+pytest
