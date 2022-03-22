@@ -48,7 +48,7 @@ def test_all_details_provided():
 
 
 def test_user_password_generation():
-    user = User(first_name=first_name, last_name=last_name, dob=dob, address=address,
+    user = User(id=1, first_name=first_name, last_name=last_name, dob=dob, address=address,
                 hobbies=hobbies, national_id=national_id, createdAt=datetime.now())
 
     assert len(user.password.get_secret_value()) >= 8

@@ -39,6 +39,7 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
+    id: int
     password: SecretStr = Field(
         default_factory=lambda: SecretStr(generate_random_password()))
     username: str = ""
