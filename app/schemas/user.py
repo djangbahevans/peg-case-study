@@ -39,6 +39,7 @@ class UserBase(BaseModel):
 
 class UserUpdate(UserBase):
     password: SecretStr
+    is_admin: bool = False
     is_active: bool
     amount_paid: float
 

@@ -11,6 +11,8 @@ class AppSettings(BaseSettings):
     DATABASE_NAME: str
     DATABASE_USERNAME: str
     DATABASE_URI: str = None
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
 
     @validator("DATABASE_URI", pre=True)
     def parse_uri(cls, v, values):
