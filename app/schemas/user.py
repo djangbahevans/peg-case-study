@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List
+from typing import List, Optional
 
 from app.utils import generate_random_digits, generate_random_password
 from pydantic import BaseModel, Field, SecretStr, validator
@@ -12,6 +12,9 @@ class UserBase(BaseModel):
     address: str
     hobbies: List[str]
     national_id: str
+
+    class Config:
+        orm_mode = True
 
     @validator("first_name", "last_name", "address", "national_id", pre=True)
     def required(cls, v, values):
@@ -34,25 +37,51 @@ class UserBase(BaseModel):
         return v
 
 
+class UserUpdate(UserBase):
+    password: SecretStr
+    is_active: bool
+    amount_paid: float
+
 class UserCreate(UserBase):
-    ...
-
-
-class User(UserBase):
-    id: int
-    password: SecretStr = Field(
-        default_factory=lambda: SecretStr(generate_random_password()))
     username: str = ""
-    createdAt: datetime
 
     @validator("username", always=True)
     def set_username(cls, v, values):
+        if v:
+            return v
         try:
-            last_name = values.get("last_name")
+            last_name = values.get("last_name").lower()
             username = last_name + generate_random_digits()
             return username
         except:
             return v
 
-    class Config():
-        orm_mode = True
+
+class User(UserBase):
+    id: int
+    password: Optional[SecretStr] = None
+    username: str = ""
+    is_admin: bool = False
+    is_active: bool = False
+    amount_paid: float = 0.0
+    created_at: datetime
+
+    @validator("username", always=True)
+    def set_username(cls, v, values):
+        if v:
+            return v
+        try:
+            last_name = values.get("last_name").lower()
+            username = last_name + generate_random_digits()
+            return username
+        except:
+            return v
+
+
+class UserResponse(UserBase):
+    id: int
+    username: str
+    is_admin: bool
+    is_active: bool
+    amount_paid: float
+    created_at: datetime

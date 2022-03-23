@@ -1,5 +1,5 @@
-from app.db.base import Base
-from sqlalchemy import ARRAY, TIMESTAMP, Column, Date, Integer, String, text
+from app.db.base_class import Base
+from sqlalchemy import ARRAY, TIMESTAMP, Column, Date, Integer, String, text, Boolean, Float
 
 
 class User(Base):
@@ -12,7 +12,10 @@ class User(Base):
     address = Column(String, nullable=False)
     hobbies = Column(ARRAY(String), server_default="{}")
     national_id = Column(String, nullable=False)
-    password = Column(String, nullable=False)
+    password = Column(String, nullable=True)
     username = Column(String, nullable=False)
-    createdAt = Column(TIMESTAMP(timezone=True),
+    is_admin = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=False)
+    amount_paid = Column(Float, default=0.0)
+    created_at = Column(TIMESTAMP(timezone=True),
                        nullable=False, server_default=text("now()"))
