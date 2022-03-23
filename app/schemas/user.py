@@ -41,7 +41,7 @@ class UserUpdate(UserBase):
     password: SecretStr
     is_admin: bool = False
     is_active: bool
-    amount_paid: float
+    amount_paid: int
 
 class UserCreate(UserBase):
     username: str = ""
@@ -64,7 +64,7 @@ class User(UserBase):
     username: str = ""
     is_admin: bool = False
     is_active: bool = False
-    amount_paid: float = 0.0
+    amount_paid: int = 0
     created_at: datetime
 
     @validator("username", always=True)
@@ -84,5 +84,5 @@ class UserResponse(UserBase):
     username: str
     is_admin: bool
     is_active: bool
-    amount_paid: float
+    amount_paid: int
     created_at: datetime

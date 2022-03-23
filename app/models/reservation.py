@@ -1,6 +1,3 @@
-from email.policy import default
-from time import time
-
 from app.db.base_class import Base
 from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, ForeignKey, Integer,
                         text)

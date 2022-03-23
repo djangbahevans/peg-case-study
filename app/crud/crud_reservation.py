@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 from app.crud.base import CRUDBase
 from app.models import Reservation
@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 
 
 class CRUDReservation(CRUDBase[Reservation, ReservationCreate, ReservationUpdate]):
+    def get_multi_by_owner(self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100) -> List[Reservation]:
+        return db.query(self.model).filter(Reservation.user_id == owner_id).offset(skip).limit(limit).all()
+
     def create(self, db: Session, *, obj_in: ReservationCreate) -> Reservation:
         db_obj = Reservation(**obj_in.dict())
         db.add(db_obj)

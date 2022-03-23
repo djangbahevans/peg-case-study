@@ -1,7 +1,9 @@
 from app import crud, models, schemas
 from app.api import deps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm.session import Session
+
+from app.utils import can_access_facility
 
 router = APIRouter()
 
@@ -16,16 +18,24 @@ def read_reservations(
     """
     Retrieve reservations.
     """
-    users = crud.reservation.get_multi(db, skip=skip, limit=limit)
+    if current_user.is_admin:
+        users = crud.reservation.get_multi(db, skip=skip, limit=limit)
+    else:
+        users = crud.reservation.get_multi_by_owner(
+            db, owner_id=current_user.id, skip=skip, limit=limit)
     return users
 
 
-@router.post("/", response_model=schemas.ReservationResponse)
+@router.post("/", response_model=schemas.ReservationResponse, status_code=status.HTTP_201_CREATED)
 def create_reservation(
     res_in: schemas.ReservationCreate,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user)
 ):
+    if not can_access_facility(current_user.amount_paid, res_in.facility):
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="Payment required to access facility")
+    print("Can access facility")
     res = schemas.Reservation(user_id=current_user.id, **res_in.dict())
     reservation = crud.reservation.create(db, obj_in=res)
     return reservation

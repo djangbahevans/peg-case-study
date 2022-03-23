@@ -16,6 +16,6 @@ class User(Base):
     username = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False)
     is_active = Column(Boolean, default=False)
-    amount_paid = Column(Float, default=0.0)
+    amount_paid = Column(Integer, default=0)
     created_at = Column(TIMESTAMP(timezone=True),
                        nullable=False, server_default=text("now()"))

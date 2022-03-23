@@ -4,7 +4,7 @@ from pydantic import SecretStr
 
 from app import crud, models, schemas, utils
 from app.api import deps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm.session import Session
 
 router = APIRouter()
@@ -24,7 +24,7 @@ def read_users(
     return users
 
 
-@router.post("/", response_model=schemas.UserResponse)
+@router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user_req: schemas.UserCreate, db: Session = Depends(deps.get_db)) -> Any:
     """
     Create new user without the need to be logged in.
