@@ -24,7 +24,7 @@ def read_users(
     return users
 
 
-@router.post("/sign-up", response_model=schemas.UserResponse)
+@router.post("/", response_model=schemas.UserResponse)
 def create_user(user_req: schemas.UserCreate, db: Session = Depends(deps.get_db)) -> Any:
     """
     Create new user without the need to be logged in.
@@ -52,4 +52,6 @@ def approve_user(username: str, db: Session = Depends(deps.get_db), current_user
     user_in.is_active = True
     user_in.password = SecretStr(utils.generate_random_password())
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
+
+    # Send password via email/SMS
     return user

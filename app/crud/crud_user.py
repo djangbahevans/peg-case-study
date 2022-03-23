@@ -3,15 +3,15 @@ from typing import Any, Dict, Optional, Union
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models import User
-from app.schemas import UserCreate, UserUpdate
+from app.schemas import ReservationCreate, UserUpdate
 from sqlalchemy.orm import Session
 
 
-class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+class CRUDUser(CRUDBase[User, ReservationCreate, UserUpdate]):
     def get_by_username(self, db: Session, *, username: str) -> Optional[User]:
         return db.query(User).filter(User.username == username).first()
 
-    def create(self, db: Session, *, obj_in: UserCreate) -> User:
+    def create(self, db: Session, *, obj_in: ReservationCreate) -> User:
         db_obj = User(**obj_in.dict())
         db.add(db_obj)
         db.commit()
@@ -28,7 +28,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 update_data["password"].get_secret_value())
             del update_data["password"]
             update_data["password"] = hashed_password
-            db_obj
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def authenticate(self, db: Session, *, username: str, password: str) -> Optional[User]:
