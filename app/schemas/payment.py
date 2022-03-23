@@ -9,6 +9,9 @@ class PaymentBase(BaseModel):
         orm_mode = True
 
 class PaymentCreate(PaymentBase):
+    user_id: int
+
+class PaymentUpdate(PaymentBase):
     ...
 
 class PaymentResponse(PaymentBase):

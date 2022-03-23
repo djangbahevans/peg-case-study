@@ -7,7 +7,7 @@ class Payment(Base):
     __tablename__ = "payments"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    amoumt = Column(Integer, nullable=False, default=0)
+    amount = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text("now()"))
