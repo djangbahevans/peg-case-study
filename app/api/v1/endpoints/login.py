@@ -5,7 +5,7 @@ from app import crud, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
@@ -22,9 +22,9 @@ def login_access_token(db: Session = Depends(deps.get_db), form_data: OAuth2Pass
     )
     if not user:
         raise HTTPException(
-            status_code=400, detail="Incorrect email or password")
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect email or password")
     elif not crud.user.is_active(user):
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {

@@ -23,7 +23,7 @@ class CRUDUser(CRUDBase[User, ReservationCreate, UserUpdate]):
             update_data = obj_in
         else:
             update_data = obj_in.dict(exclude_unset=True)
-        if update_data["password"]:
+        if "password" in update_data:
             hashed_password = get_password_hash(
                 update_data["password"].get_secret_value())
             del update_data["password"]

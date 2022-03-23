@@ -86,3 +86,6 @@ class UserResponse(UserBase):
     is_active: bool
     amount_paid: int
     created_at: datetime
+
+class UserResponseWithPassword(UserBase):
+    password: str

@@ -1,5 +1,6 @@
+from .payment import PaymentCreate, PaymentResponse, PaymentUpdate
 from .reservation import (Reservation, ReservationCreate, ReservationResponse,
                           ReservationUpdate)
 from .token import Token, TokenPayload
-from .user import User, UserCreate, UserResponse, UserUpdate
-from .payment import PaymentCreate, PaymentResponse
+from .user import (User, UserCreate, UserResponse, UserResponseWithPassword,
+                   UserUpdate)
