@@ -3,7 +3,7 @@ from typing import List
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm.session import Session
 
 router = APIRouter()
@@ -11,6 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schemas.PaymentResponse])
 def read_payment(
+    response: Response,
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
@@ -18,9 +19,12 @@ def read_payment(
 ):
     if current_user.is_admin:
         payments = crud.payment.get_multi(db, skip=skip, limit=limit)
+        count = crud.payment.get_multi_total_count(db)
     else:
         payments = crud.payment.get_multi_by_owner(
             db, owner_id=current_user.id, skip=skip, limit=limit)
+        count = crud.payment.get_multi_total_count(db)
+    response.headers["x-total-count"] = f"{count}"
     return payments
 
 
