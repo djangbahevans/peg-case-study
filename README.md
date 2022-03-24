@@ -106,25 +106,27 @@ This application installs all prerequisites with docker. Therefore verify that d
 
 1. Open the project path in your terminal
 
-2. Build the images with docker compose
+2. Feel free to change the environment variables in the *.env files
+
+3. Build the images with docker compose
 
    ```sh
    docker compose build
    ```
 
-3. Run alembic migrations
+4. Run alembic migrations
 
    ```sh
    docker compose run backend alembic upgrade head
    ```
 
-4. Stop and remove and running containers
+5. Stop and remove and running containers
 
    ```sh
    docker compose down
    ```
 
-5. Start application with docker
+6. Start application with docker
 
    ```sh
    docker compose up -d
