@@ -18,6 +18,7 @@ const UserRow = ({ user, isSelected, handleClick }: IUserRowProps) => {
       <TableRow
         hover
         role="checkbox"
+        onClick={event => handleClick(event, user.id) }
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}
@@ -26,10 +27,6 @@ const UserRow = ({ user, isSelected, handleClick }: IUserRowProps) => {
       >
         <TableCell padding="checkbox">
           <Checkbox
-            onClick={event => {
-              event.stopPropagation()
-              handleClick(event, user.id)
-            }}
             color="primary"
             checked={isSelected}
             inputProps={{

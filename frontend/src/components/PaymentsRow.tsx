@@ -24,6 +24,7 @@ const PaymentRow = ({ payment, isSelected, handleClick }: IPaymentRowProps) => {
       <TableRow
         hover
         role="checkbox"
+        onClick={event => handleClick(event, payment.id)}
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}
@@ -32,10 +33,6 @@ const PaymentRow = ({ payment, isSelected, handleClick }: IPaymentRowProps) => {
       >
         <TableCell padding="checkbox">
           <Checkbox
-            onClick={event => {
-              event.stopPropagation()
-              handleClick(event, payment.id)
-            }}
             color="primary"
             checked={isSelected}
             inputProps={{

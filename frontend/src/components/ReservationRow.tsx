@@ -24,6 +24,7 @@ const ReservationRow = ({ reservation, isSelected, handleClick }: IReservationRo
       <TableRow
         hover
         role="checkbox"
+        onClick={event => handleClick(event, reservation.id)}
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}
@@ -32,10 +33,6 @@ const ReservationRow = ({ reservation, isSelected, handleClick }: IReservationRo
       >
         <TableCell padding="checkbox">
           <Checkbox
-            onClick={event => {
-              event.stopPropagation()
-              handleClick(event, reservation.id)
-            }}
             color="primary"
             checked={isSelected}
             inputProps={{
