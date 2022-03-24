@@ -151,6 +151,11 @@ const SignupPage = () => {
           {mutation.error ? (mutation.error as IError).detail : ""}
         </Alert>
       </Snackbar>
+      <Snackbar autoHideDuration={6000} open={mutation.isSuccess} onClose={() => { mutation.reset() }}>
+        <Alert severity="success" sx={{ width: '100%' }} onClose={() => { mutation.reset() }}>
+          Successfully created an account. Please wait for approval.
+        </Alert>
+      </Snackbar>
     </div >
   )
 }
