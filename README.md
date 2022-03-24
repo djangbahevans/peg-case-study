@@ -137,7 +137,9 @@ This application installs all prerequisites with docker. Therefore verify that d
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Visit [http://localhost:80](http://localhost:80) on the browser to interact with the application. API documentation is available at [http://localhost:3000](http://localhost:3000/docs)
+Visit [http://localhost:80](http://localhost:80) on the browser to interact with the application. API documentation is available at [http://localhost:3000](http://localhost:3000/docs).
+
+The username and password for first superuser is `admin`, and `admin` respectively, but can be configured in the backend.env file.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
