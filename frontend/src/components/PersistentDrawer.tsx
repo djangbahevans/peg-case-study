@@ -95,7 +95,6 @@ const PersistentDrawer = ({ open, handleDrawerClose, children }: IDrawerProps) =
         </List>}
       </Drawer>
       <Main open={open}>
-        {/* <DrawerHeader /> */}
         {children}
       </Main>
     </Box>

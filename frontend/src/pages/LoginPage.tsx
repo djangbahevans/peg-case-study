@@ -48,15 +48,15 @@ const LoginPage = () => {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Email"
+                label="Username"
                 variant="outlined"
-                type="email"
+                type="text"
                 helperText={usernameError}
                 sx={{ paddingBottom: 2 }}
                 onChange={(e) => { setUsername(e.target.value) }}
                 value={username}
                 error={!!usernameError}
-                autoComplete="email"
+                autoComplete="username"
                 required
                 fullWidth
               />

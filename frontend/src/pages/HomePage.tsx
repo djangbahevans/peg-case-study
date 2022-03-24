@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { ReservationsTable, PersistentDrawer, PrimarySearchAppBar } from "../components"
+import { Outlet } from "react-router-dom"
+import { PersistentDrawer, PrimarySearchAppBar } from "../components"
 
 
 const HomePage = () => {
@@ -17,10 +18,11 @@ const HomePage = () => {
     <>
       <PrimarySearchAppBar handleMenuClick={swapDrawerState} open={open} />
       <PersistentDrawer open={open} handleDrawerClose={handleDrawerClose}>
-        <ReservationsTable />
+        <Outlet />
       </PersistentDrawer>
     </>
   )
 }
 
 export { HomePage }
+
