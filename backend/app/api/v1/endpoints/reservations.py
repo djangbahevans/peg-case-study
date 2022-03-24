@@ -25,7 +25,7 @@ def read_reservations(
     else:
         users = crud.reservation.get_multi_by_owner(
             db, owner_id=current_user.id, skip=skip, limit=limit)
-        count = crud.reservation.get_multi_by_owner_count(db)
+        count = crud.reservation.get_multi_by_owner_count(db, owner_id=current_user.id)
     response.headers["x-total-count"] = f"{count}"
     return users
 

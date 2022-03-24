@@ -3,7 +3,7 @@ from typing import List
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 from sqlalchemy.orm.session import Session
 
 router = APIRouter()
@@ -31,8 +31,8 @@ def read_payment(
 @router.post("/", response_model=schemas.PaymentResponse)
 def create_payment(
     *,
-    amount: int,
-    username: str,
+    amount: int = Body(...),
+    username: str = Body(...),
     db: Session = Depends(deps.get_db),
     admin: models.User = Depends(deps.get_current_active_admin)
 ):
