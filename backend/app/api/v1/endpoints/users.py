@@ -4,7 +4,7 @@ from pydantic import SecretStr
 
 from app import crud, models, schemas, utils
 from app.api import deps
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm.session import Session
 
 router = APIRouter()
@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schemas.UserResponse])
 def read_users(
+    response: Response,
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
@@ -21,7 +22,40 @@ def read_users(
     Retrieve users.
     """
     users = crud.user.get_multi(db, skip=skip, limit=limit)
+    count = crud.user.get_multi_total_count(db)
+    response.headers["x-total-count"] = f"{count}"
     return users
+
+
+@router.get("/me", response_model=schemas.UserResponse)
+def get_current_user(
+    db: Session = Depends(deps.get_db),
+    current_user=Depends(deps.get_current_active_user)
+):
+    """
+    Get current user
+    """
+    return current_user
+
+
+@router.get("/{id}", response_model=schemas.UserResponse)
+def get_single_user(
+    id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user)
+):
+    """
+    Get single user
+    """
+    if current_user.is_admin:
+        return crud.user.get(db, id=id)
+
+    if id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="The user does not have enough privileges"
+        )
+
+    return current_user
 
 
 @router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
@@ -35,12 +69,13 @@ def create_user(user_req: schemas.UserCreate, db: Session = Depends(deps.get_db)
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this username already exists in the system",
         )
+
     user_in = schemas.UserCreate(**user_req.dict())
     user = crud.user.create(db, obj_in=user_in)
     return user
 
 
-@router.put("/approve-user/{username}", response_model=schemas.UserResponseWithPassword)
+@router.put("/approve/{username}", response_model=schemas.UserPasswordResponse)
 def approve_user(username: str, db: Session = Depends(deps.get_db), current_user: schemas.User = Depends(deps.get_current_active_admin)):
     user = crud.user.get_by_username(db, username=username)
     if not user:
@@ -61,4 +96,22 @@ def approve_user(username: str, db: Session = Depends(deps.get_db), current_user
     print(f"\033[93mWarning: never send out plain passwords\033[0m")
     user.password = user_in.password.get_secret_value()
 
-    return user
+    return {"password": user.password}
+
+
+@router.delete("/{id}")
+def delete_user(
+    id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_active_user)
+):
+    if current_user.is_admin:
+        crud.user.remove(db, id=id)
+
+    if id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="The user does not have enough privileges"
+        )
+    crud.user.remove(db, id=id)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

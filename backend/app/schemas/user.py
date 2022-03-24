@@ -45,6 +45,7 @@ class UserUpdate(UserBase):
 
 class UserCreate(UserBase):
     username: str = ""
+    is_admin: bool = False
 
     @validator("username", always=True)
     def set_username(cls, v, values):
@@ -87,5 +88,5 @@ class UserResponse(UserBase):
     amount_paid: int
     created_at: datetime
 
-class UserResponseWithPassword(UserBase):
+class UserPasswordResponse(BaseModel):
     password: str
