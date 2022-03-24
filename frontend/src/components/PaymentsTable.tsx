@@ -29,7 +29,7 @@ interface IAddUserDialogProps {
 
 const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
   const [username, setUsername] = useState<string>("");
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<string>("0.00");
 
   return (
     <div>
@@ -55,14 +55,17 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
             label="Amount"
             type="number"
             fullWidth
+            inputProps={{
+              inputMode: 'numeric', min: "0.00", step: "0.01"
+            }}
             value={amount}
-            onChange={e => setAmount(parseFloat(e.target.value))}
+            onChange={e => setAmount(e.target.value)}
             variant="standard"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={() => { handleConfirm({ username, amount }); handleClose(); }}>Confirm</Button>
+          <Button onClick={() => { handleConfirm({ username, amount: Math.floor(parseFloat(amount) * 100) }); handleClose(); }}>Confirm</Button>
         </DialogActions>
       </Dialog>
     </div>

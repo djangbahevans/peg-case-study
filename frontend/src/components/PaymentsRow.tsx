@@ -50,7 +50,9 @@ const PaymentRow = ({ payment, isSelected, handleClick }: IPaymentRowProps) => {
         </TableCell>
         <TableCell
           align="left"
-          sx={{ display: { xs: "none", sm: "none", md: "table-cell", lg: "table-cell", xl: "table-cell" } }} >{payment.amount}</TableCell>
+          sx={{ display: { xs: "none", sm: "none", md: "table-cell", lg: "table-cell", xl: "table-cell" } }} >
+          {(payment.amount / 100).toFixed(2)}
+        </TableCell>
         <TableCell
           align="left"
           sx={{ display: { xs: "none", sm: "none", md: "none", lg: "table-cell", xl: "table-cell" } }} >

@@ -22,7 +22,7 @@ export type IPaymentCreate = {
 export type IPayment = {
   id: number
   user_id: number
-  amount: string
+  amount: number
   created_at: string
 }
 
