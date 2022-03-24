@@ -13,7 +13,7 @@ class Reservation(Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     facility = Column(FacilitiesEnum, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     time = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text("now()"))

@@ -8,7 +8,7 @@ class Payment(Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     amount = Column(Integer, nullable=False, default=0)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text("now()"))
 
