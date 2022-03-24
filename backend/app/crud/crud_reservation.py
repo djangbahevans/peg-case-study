@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 class CRUDReservation(CRUDBase[Reservation, ReservationCreate, ReservationUpdate]):
     def get_multi_by_owner(self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100) -> List[Reservation]:
         return db.query(self.model).filter(Reservation.user_id == owner_id).offset(skip).limit(limit).all()
+    
+    def get_multi_by_owner_count(self, db: Session, *, owner_id: int) -> int:
+        return db.query(self.model).filter(Reservation.user_id == owner_id).count()
 
     def create(self, db: Session, *, obj_in: ReservationCreate) -> Reservation:
         db_obj = Reservation(**obj_in.dict())
