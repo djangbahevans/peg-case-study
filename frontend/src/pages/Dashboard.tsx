@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom"
 import { PersistentDrawer, PrimarySearchAppBar } from "../components"
 
 
-const HomePage = () => {
+const Dashboard = () => {
   const swapDrawerState = () => {
     setOpen(!open)
   }
@@ -24,5 +24,5 @@ const HomePage = () => {
   )
 }
 
-export { HomePage }
+export { Dashboard }
 

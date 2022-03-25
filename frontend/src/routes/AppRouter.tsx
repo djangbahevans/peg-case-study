@@ -1,14 +1,13 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { AdminRoute, PrivateRoute, PublicRoute } from "."
 import { PaymentsTable, ReservationsTable, UsersTable } from "../components"
-import { LoginPage, SignupPage } from "../pages"
-import { HomePage } from "../pages/HomePage"
+import { Dashboard, LoginPage, SignupPage } from "../pages"
 
 const AppRouter = () => (
   <BrowserRouter>
     <div>
       <Routes>
-        <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>}>
+        <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
           <Route path="/" element={<ReservationsTable/>} />
           <Route path="/payments" element={<PaymentsTable />} />
           <Route path="/users" element={<AdminRoute><UsersTable /></AdminRoute>} />
