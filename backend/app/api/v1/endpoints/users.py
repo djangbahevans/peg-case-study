@@ -107,11 +107,11 @@ def delete_user(
 ):
     if current_user.is_admin:
         crud.user.remove(db, id=id)
-
-    if id != current_user.id:
+    elif id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="The user does not have enough privileges"
         )
-    crud.user.remove(db, id=id)
+    else:
+        crud.user.remove(db, id=id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
