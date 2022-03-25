@@ -7,7 +7,7 @@ import { alpha } from '@mui/material/styles';
 import { format } from "date-fns";
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { approveUser, createUser, getUsers } from '../services/api';
+import { approveUser, createUser, deleteUser, getUsers } from '../services/api';
 import { IPaginateResponse, IUser, IUserCreate } from "../utils/sharedInterfaces";
 import { processHobbies } from '../utils/utilitiyFunctions';
 import { UserRow } from './UserRow';
@@ -20,19 +20,20 @@ interface IUsersTableProps {
 
 interface IUsersTableToolbarProps {
   numSelected: number;
-  handleAdd: () => void;
-  handleApprove: () => void;
+  onAdd: () => void;
+  onApprove: () => void;
+  onDelete: () => void;
 }
 
 interface IAddUserDialogProps {
-  handleClose: () => void
-  handleCancel?: () => void
-  handleConfirm: ({
+  onClose: () => void
+  onCancel?: () => void
+  onConfirm: ({
     first_name, last_name, dob, address, hobbies, national_id
   }: IUserCreate) => void
 }
 
-const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
+const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
   const [first_name, setFirstName] = useState<string>("");
   const [last_name, setLastName] = useState<string>("");
   const [dob, setDoB] = useState<string>(format(new Date(), "yyyy-MM-dd"));
@@ -43,7 +44,7 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
 
   return (
     <div>
-      <Dialog open={true} onClose={handleClose}>
+      <Dialog open={true} onClose={onClose}>
         <DialogTitle>Subscribe</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -112,9 +113,9 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
           <FormControlLabel control={<Checkbox onChange={e => setIsAdmin(e.target.value === "on")} />} label="Admin?" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={onClose}>Cancel</Button>
           <Button onClick={() => {
-            handleConfirm({
+            onConfirm({
               first_name,
               last_name,
               dob,
@@ -123,7 +124,7 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
               national_id,
               is_admin
             });
-            handleClose();
+            onClose();
           }}>Confirm</Button>
         </DialogActions>
       </Dialog>
@@ -196,7 +197,7 @@ function UsersTableHead(props: IUsersTableProps) {
 }
 
 const UsersTableToolbar = (props: IUsersTableToolbarProps) => {
-  const { numSelected, handleAdd, handleApprove } = props;
+  const { numSelected, onAdd, onApprove, onDelete } = props;
 
   return (
     <Toolbar
@@ -231,11 +232,11 @@ const UsersTableToolbar = (props: IUsersTableToolbarProps) => {
       {numSelected > 0 ? (
         <>
           <Tooltip title={`Approve user${numSelected > 1 ? ("s") : ""}`}>
-            <IconButton onClick={handleApprove}>
+            <IconButton onClick={onApprove}>
               <CheckIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete" onClick={onDelete}>
             <IconButton>
               <DeleteIcon />
             </IconButton>
@@ -244,7 +245,7 @@ const UsersTableToolbar = (props: IUsersTableToolbarProps) => {
       ) : (
         <>
           <Tooltip title="Add">
-            <IconButton onClick={handleAdd}>
+            <IconButton onClick={onAdd}>
               <AddIcon />
             </IconButton>
           </Tooltip>
@@ -264,7 +265,7 @@ export default function UsersTable() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [modalState, setModalState] = useState<{open: boolean, detail: string, severity: AlertColor}>({ open: false, detail: "", severity: "success" });
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>({ open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
@@ -284,6 +285,15 @@ export default function UsersTable() {
     },
     onError: () => {
       setModalState({ open: true, detail: "Failed to approve user", severity: "error" })
+    }
+  })
+  const deleteUserMutation = useMutation(deleteUser, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("users")
+      setModalState({ open: true, detail: `User successfully deleted.`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to delete user", severity: "error" })
     }
   })
   const { data, isError, isLoading } = useQuery<IPaginateResponse<IUser[]>, Error>(['users', page, rowsPerPage], getUsers)
@@ -351,6 +361,14 @@ export default function UsersTable() {
     })
   }
 
+  const handleDelete = () => {
+    users!.forEach(user => {
+      if (!selected.includes(user.id)) return
+      deleteUserMutation.mutateAsync(user.id)
+      setSelected([])
+    })
+  }
+
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
 
   if (isLoading)
@@ -364,7 +382,7 @@ export default function UsersTable() {
     <>
       <Box sx={{ width: '100%' }}>
         <Paper sx={{ width: '100%', mb: 2 }}>
-          <UsersTableToolbar handleApprove={handleApprove} handleAdd={handleDialogOpen} numSelected={selected.length} />
+          <UsersTableToolbar onDelete={handleDelete} onApprove={handleApprove} onAdd={handleDialogOpen} numSelected={selected.length} />
           <TableContainer>
             <Table
               // sx={{ minWidth: 750 }}
@@ -399,8 +417,8 @@ export default function UsersTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog handleConfirm={handleDialogConfirm} handleClose={handleDialogClose} />}
-      <Snackbar open={modalState.open} autoHideDuration={6000} onClose={handleModalClose}>
+      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <Snackbar open={modalState.open} onClose={handleModalClose}>
         <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
           {modalState.detail}
         </Alert>
