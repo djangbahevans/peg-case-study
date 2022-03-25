@@ -1,12 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
-import { AlertTitle, Alert, Box, Checkbox, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
+import { AlertTitle, Alert, Box, Checkbox, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, AlertColor, Snackbar } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { ReservationRow } from ".";
-import { getReservations, createReservation } from '../services/api';
+import { getReservations, createReservation, deleteReservation } from '../services/api';
 import { IReservation, IPaginateResponse, IReservationCreate } from "../utils/sharedInterfaces";
 import { format } from "date-fns"
 
@@ -19,6 +19,7 @@ interface IReservationsTableProps {
 interface IReservationsTableToolbarProps {
   numSelected: number;
   onAdd: () => void;
+  onDelete: () => void;
 }
 
 interface IAddUserDialogProps {
@@ -118,7 +119,7 @@ function ReservationsTableHead(props: IReservationsTableProps) {
 }
 
 const ReservationsTableToolbar = (props: IReservationsTableToolbarProps) => {
-  const { numSelected, onAdd } = props;
+  const { numSelected, onAdd, onDelete } = props;
 
   return (
     <Toolbar
@@ -152,7 +153,7 @@ const ReservationsTableToolbar = (props: IReservationsTableToolbarProps) => {
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={onDelete}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -179,12 +180,27 @@ export default function ReservationsTable() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
+    { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
-  const mutation = useMutation(createReservation, {
+  const createReservationMutation = useMutation(createReservation, {
     onSuccess: () => {
-      setTimeout(() => queryClient.invalidateQueries("reservations"), 2000)
+      queryClient.invalidateQueries("reservations")
+      setModalState({ open: true, detail: `Reservation successfully booked.`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to book reservation", severity: "error" })
+    }
+  })
+  const deleteReservationMutation = useMutation(deleteReservation, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("reservations")
+      setModalState({ open: true, detail: `Reservation successfully deleted.`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to delete reservation", severity: "error" })
     }
   })
   const { data, isError, isLoading } = useQuery<IPaginateResponse<IReservation[]>, Error>(['reservations', page, rowsPerPage], getReservations)
@@ -228,7 +244,7 @@ export default function ReservationsTable() {
   }
 
   const handleDialogConfirm = ({ facility, time }: IReservationCreate) => {
-    mutation.mutateAsync({
+    createReservationMutation.mutateAsync({
       facility,
       time
     })
@@ -243,6 +259,18 @@ export default function ReservationsTable() {
     setPage(0);
   };
 
+  const handleDelete = () => {
+    reservations!.forEach(reservation => {
+      if (!selected.includes(reservation.id)) return
+      deleteReservationMutation.mutateAsync(reservation.id)
+      setSelected([])
+    })
+  }
+
+  const handleModalClose = () => {
+    setModalState({ ...modalState, open: false })
+  }
+
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
 
   if (isLoading)
@@ -256,7 +284,7 @@ export default function ReservationsTable() {
     <>
       <Box sx={{ width: '100%' }}>
         <Paper sx={{ width: '100%', mb: 2 }}>
-          <ReservationsTableToolbar onAdd={handleDialogOpen} numSelected={selected.length} />
+          <ReservationsTableToolbar onDelete={handleDelete} onAdd={handleDialogOpen} numSelected={selected.length} />
           <TableContainer>
             <Table
               // sx={{ minWidth: 750 }}
@@ -293,6 +321,11 @@ export default function ReservationsTable() {
         </Paper>
       </Box>
       {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <Snackbar open={modalState.open} onClose={handleModalClose}>
+        <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
+          {modalState.detail}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
