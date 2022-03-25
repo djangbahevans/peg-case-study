@@ -18,13 +18,12 @@ export const getReservations = async (queryKey: any): Promise<IPaginateResponse<
 
   const data: IReservation[] | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return { count, data }
 }
 
 export const createReservation = async (reservation: IReservationCreate): Promise<IReservation> => {
-  console.log("Creating a reservation")
   const response = await fetch(`${process.env.REACT_APP_API_URL}/reservations`, {
     method: "post",
     mode: "cors",
@@ -38,7 +37,7 @@ export const createReservation = async (reservation: IReservationCreate): Promis
   const data: IReservation | IError = await response.json()
 
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -60,7 +59,7 @@ export const getPayments = async (queryKey: any): Promise<IPaginateResponse<IPay
 
   const data: IPayment[] | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return { count, data }
 }
@@ -79,7 +78,7 @@ export const createPayment = async (payment: IPaymentCreate): Promise<IPayment> 
   const data: IPayment | IError = await response.json()
 
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -97,7 +96,7 @@ export const createUser = async (user: IUserCreate): Promise<IUser> => {
 
   const data: IUser | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -115,7 +114,7 @@ export const approveUser = async (username: string): Promise<IUser> => {
 
   const data: IUser | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -136,7 +135,7 @@ export const getUsers = async (queryKey: any): Promise<IPaginateResponse<IUser[]
 
   const data: IUser[] | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return { count, data }
 }
@@ -152,7 +151,7 @@ export const getMe = async (): Promise<IUser> => {
 
   const data: IUser | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -168,7 +167,7 @@ export const getUserbyId = async (id: number): Promise<IUser> => {
 
   const data: IUser | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -191,7 +190,7 @@ export const updateUser = async ({ id, user }: IUpdateUserVariables): Promise<IU
 
   const data: IUser | IError = await response.json()
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 }
@@ -207,7 +206,7 @@ export const deleteUser = async (id: number) => {
 
   if (response.status !== 204) {
     const data: IError = await response.json()
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
   }
 }
 
@@ -224,7 +223,7 @@ export const forgotPassword = async (email: string): Promise<IForgotPasswordResp
   })
 
   const data: IForgotPasswordResponse | IError = await response.json()
-  if ("detail" in data) throw new Error(data.detail)
+  if ("detail" in data) throw new Error(`Code ${response.status}: ${data.detail}`)
 
   else return data
 }
@@ -246,7 +245,7 @@ export const login = async ({ username: email, password }: ILoginVariables) => {
   const data: ILoginResponse | IError = await response.json()
 
   if ("detail" in data)
-    throw new Error(data.detail)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
 
   return data
 

@@ -18,12 +18,6 @@ const useAuth = () => {
       })
     },
     onError: () => {
-      const token = localStorage.getItem("access_token")
-      if (!token) {
-        setAuthInfo({ isAuthenticated: false, loading: false })
-        return
-      }
-
       setAuthInfo({
         isAuthenticated: false, loading: false
       })
@@ -35,6 +29,14 @@ const useAuth = () => {
         setAuthInfo({ isAuthenticated: false, loading: false })
         return false
       }
+
+      if (error instanceof Error) {
+        if (error.message.includes("Code 403")) {
+          return false
+        }
+      }
+
+      if (failureCount > 3) return false
 
       return true
     }
