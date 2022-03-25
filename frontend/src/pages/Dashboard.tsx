@@ -16,8 +16,8 @@ const Dashboard = () => {
 
   return (
     <>
-      <PrimarySearchAppBar handleMenuClick={swapDrawerState} open={open} />
-      <PersistentDrawer open={open} handleDrawerClose={handleDrawerClose}>
+      <PrimarySearchAppBar onMenuClick={swapDrawerState} open={open} />
+      <PersistentDrawer open={open} onDrawerClose={handleDrawerClose}>
         <Outlet />
       </PersistentDrawer>
     </>

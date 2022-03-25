@@ -18,16 +18,16 @@ interface IReservationsTableProps {
 
 interface IReservationsTableToolbarProps {
   numSelected: number;
-  handleAdd: () => void;
+  onAdd: () => void;
 }
 
 interface IAddUserDialogProps {
-  handleClose: () => void
-  handleCancel?: () => void
-  handleConfirm: ({ facility, time }: IReservationCreate) => void
+  onClose: () => void
+  onCancel?: () => void
+  onConfirm: ({ facility, time }: IReservationCreate) => void
 }
 
-const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
+const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
   const [time, setTime] = useState<string>(format(new Date(), "yyyy-MM-dd'T'hh:mm"));
   const [facility, setFacility] = useState<"Swimming Pool" | "Tennis Court" | "Gym" | "Conference Room">("Swimming Pool");
 
@@ -35,7 +35,7 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
 
   return (
     <div>
-      <Dialog open={true} onClose={handleClose}>
+      <Dialog open={true} onClose={onClose}>
         <DialogTitle>Subscribe</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -66,8 +66,8 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={() => { handleConfirm({ facility, time }); handleClose(); }}>Confirm</Button>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={() => { onConfirm({ facility, time }); onClose(); }}>Confirm</Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -118,7 +118,7 @@ function ReservationsTableHead(props: IReservationsTableProps) {
 }
 
 const ReservationsTableToolbar = (props: IReservationsTableToolbarProps) => {
-  const { numSelected, handleAdd } = props;
+  const { numSelected, onAdd } = props;
 
   return (
     <Toolbar
@@ -159,7 +159,7 @@ const ReservationsTableToolbar = (props: IReservationsTableToolbarProps) => {
       ) : (
         <>
           <Tooltip title="Add">
-            <IconButton onClick={handleAdd}>
+            <IconButton onClick={onAdd}>
               <AddIcon />
             </IconButton>
           </Tooltip>
@@ -256,7 +256,7 @@ export default function ReservationsTable() {
     <>
       <Box sx={{ width: '100%' }}>
         <Paper sx={{ width: '100%', mb: 2 }}>
-          <ReservationsTableToolbar handleAdd={handleDialogOpen} numSelected={selected.length} />
+          <ReservationsTableToolbar onAdd={handleDialogOpen} numSelected={selected.length} />
           <TableContainer>
             <Table
               // sx={{ minWidth: 750 }}
@@ -275,7 +275,7 @@ export default function ReservationsTable() {
                     const isItemSelected = isSelected(row.id);
 
                     return (
-                      <ReservationRow key={row.id} handleClick={handleClick} reservation={row} isSelected={isItemSelected} />
+                      <ReservationRow key={row.id} onClick={handleClick} reservation={row} isSelected={isItemSelected} />
                     );
                   })}
               </TableBody>
@@ -292,7 +292,7 @@ export default function ReservationsTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog handleConfirm={handleDialogConfirm} handleClose={handleDialogClose} />}
+      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
     </>
   );
 }

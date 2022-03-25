@@ -8,10 +8,10 @@ import { IPayment, IUser } from "../utils/sharedInterfaces"
 interface IPaymentRowProps {
   payment: IPayment
   isSelected: boolean
-  handleClick: (event: React.MouseEvent<unknown>, id: number) => void
+  onClick: (event: React.MouseEvent<unknown>, id: number) => void
 }
 
-const PaymentRow = ({ payment, isSelected, handleClick }: IPaymentRowProps) => {
+const PaymentRow = ({ payment, isSelected, onClick }: IPaymentRowProps) => {
   let name = `${payment.user_id}`
   const labelId = `contacts-table-checkbox-${payment.id}`
 
@@ -24,7 +24,7 @@ const PaymentRow = ({ payment, isSelected, handleClick }: IPaymentRowProps) => {
       <TableRow
         hover
         role="checkbox"
-        onClick={event => handleClick(event, payment.id)}
+        onClick={event => onClick(event, payment.id)}
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}

@@ -8,10 +8,10 @@ import { IReservation, IUser } from "../utils/sharedInterfaces"
 interface IReservationRowProps {
   reservation: IReservation
   isSelected: boolean
-  handleClick: (event: React.MouseEvent<unknown>, id: number) => void
+  onClick: (event: React.MouseEvent<unknown>, id: number) => void
 }
 
-const ReservationRow = ({ reservation, isSelected, handleClick }: IReservationRowProps) => {
+const ReservationRow = ({ reservation, isSelected, onClick: onClick }: IReservationRowProps) => {
   let name = `${reservation.user_id}`
   const labelId = `contacts-table-checkbox-${reservation.id}`
 
@@ -24,7 +24,7 @@ const ReservationRow = ({ reservation, isSelected, handleClick }: IReservationRo
       <TableRow
         hover
         role="checkbox"
-        onClick={event => handleClick(event, reservation.id)}
+        onClick={event => onClick(event, reservation.id)}
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}

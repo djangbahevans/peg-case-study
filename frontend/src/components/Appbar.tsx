@@ -8,7 +8,7 @@ import { useAuth } from '../contexts';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean
-  handleMenuClick?: () => void
+  onMenuClick?: () => void
 }
 
 const drawerWidth = 240;
@@ -70,7 +70,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const PrimarySearchAppBar = ({ handleMenuClick, open }: AppBarProps) => {
+const PrimarySearchAppBar = ({ onMenuClick, open }: AppBarProps) => {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -151,7 +151,7 @@ const PrimarySearchAppBar = ({ handleMenuClick, open }: AppBarProps) => {
             color="inherit"
             aria-label="open drawer"
             sx={{ mr: 2 }}
-            onClick={handleMenuClick}
+            onClick={onMenuClick}
           >
             <MenuIcon />
           </IconButton>

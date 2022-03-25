@@ -400,7 +400,7 @@ export default function UsersTable() {
                     const isItemSelected = isSelected(row.id);
 
                     return (
-                      <UserRow key={row.id} handleClick={handleClick} user={row} isSelected={isItemSelected} />
+                      <UserRow key={row.id} onClick={handleClick} user={row} isSelected={isItemSelected} />
                     );
                   })}
               </TableBody>

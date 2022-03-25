@@ -6,10 +6,10 @@ import { IUser } from "../utils/sharedInterfaces"
 interface IUserRowProps {
   user: IUser
   isSelected: boolean
-  handleClick: (event: React.MouseEvent<unknown>, id: number) => void
+  onClick: (event: React.MouseEvent<unknown>, id: number) => void
 }
 
-const UserRow = ({ user, isSelected, handleClick }: IUserRowProps) => {
+const UserRow = ({ user, isSelected, onClick }: IUserRowProps) => {
   const name = `${user.first_name} ${user.last_name}`.replace(/\s+/g, " ").trim()
   const labelId = `contacts-table-checkbox-${user.id}`
 
@@ -18,7 +18,7 @@ const UserRow = ({ user, isSelected, handleClick }: IUserRowProps) => {
       <TableRow
         hover
         role="checkbox"
-        onClick={event => handleClick(event, user.id) }
+        onClick={event => onClick(event, user.id) }
         aria-checked={isSelected}
         tabIndex={-1}
         key={name}

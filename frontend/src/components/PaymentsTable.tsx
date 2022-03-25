@@ -18,22 +18,22 @@ interface IPaymentsTableProps {
 
 interface IPaymentsTableToolbarProps {
   numSelected: number;
-  handleAdd: () => void;
+  onAdd: () => void;
 }
 
 interface IAddUserDialogProps {
-  handleClose: () => void
-  handleCancel?: () => void
-  handleConfirm: ({ username, amount }: IPaymentCreate) => void
+  onClose: () => void
+  onCancel?: () => void
+  onConfirm: ({ username, amount }: IPaymentCreate) => void
 }
 
-const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
+const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
   const [username, setUsername] = useState<string>("");
   const [amount, setAmount] = useState<string>("0.00");
 
   return (
     <div>
-      <Dialog open={true} onClose={handleClose}>
+      <Dialog open={true} onClose={onClose}>
         <DialogTitle>Subscribe</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -64,8 +64,8 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={() => { handleConfirm({ username, amount: Math.floor(parseFloat(amount) * 100) }); handleClose(); }}>Confirm</Button>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={() => { onConfirm({ username, amount: Math.floor(parseFloat(amount) * 100) }); onClose(); }}>Confirm</Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -116,7 +116,7 @@ function PaymentTableHead(props: IPaymentsTableProps) {
 }
 
 const PaymentsTableToolbar = (props: IPaymentsTableToolbarProps) => {
-  const { numSelected, handleAdd } = props;
+  const { numSelected, onAdd } = props;
   const { user } = useAuth()
 
   return (
@@ -158,7 +158,7 @@ const PaymentsTableToolbar = (props: IPaymentsTableToolbarProps) => {
       ) : (
         <>
           {user?.is_admin && <Tooltip title="Add">
-            <IconButton onClick={handleAdd}>
+            <IconButton onClick={onAdd}>
               <AddIcon />
             </IconButton>
           </Tooltip>}
@@ -258,7 +258,7 @@ export default function PaymentsTable() {
     <>
       <Box sx={{ width: '100%' }}>
         <Paper sx={{ width: '100%', mb: 2 }}>
-          <PaymentsTableToolbar handleAdd={handleDialogOpen} numSelected={selected.length} />
+          <PaymentsTableToolbar onAdd={handleDialogOpen} numSelected={selected.length} />
           <TableContainer>
             <Table
               // sx={{ minWidth: 750 }}
@@ -277,7 +277,7 @@ export default function PaymentsTable() {
                     const isItemSelected = isSelected(row.id);
 
                     return (
-                      <PaymentRow key={row.id} handleClick={handleClick} payment={row} isSelected={isItemSelected} />
+                      <PaymentRow key={row.id} onClick={handleClick} payment={row} isSelected={isItemSelected} />
                     );
                   })}
               </TableBody>
@@ -294,7 +294,7 @@ export default function PaymentsTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog handleConfirm={handleDialogConfirm} handleClose={handleDialogClose} />}
+      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
     </>
   );
 }

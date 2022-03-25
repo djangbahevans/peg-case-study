@@ -9,7 +9,7 @@ const drawerWidth = 240;
 
 interface IDrawerProps {
   open?: boolean;
-  handleDrawerClose: () => void;
+  onDrawerClose: () => void;
   children?: ReactNode
 }
 
@@ -42,7 +42,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-const PersistentDrawer = ({ open, handleDrawerClose, children }: IDrawerProps) => {
+const PersistentDrawer = ({ open, onDrawerClose, children }: IDrawerProps) => {
   const theme = useTheme();
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -64,7 +64,7 @@ const PersistentDrawer = ({ open, handleDrawerClose, children }: IDrawerProps) =
         open={open}
       >
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={onDrawerClose}>
             {theme.direction === 'ltr' ? <ChevronLeft /> : <ChevronRight />}
           </IconButton>
         </DrawerHeader>
