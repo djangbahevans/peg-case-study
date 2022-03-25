@@ -7,7 +7,7 @@ import { alpha } from '@mui/material/styles';
 import { format } from "date-fns";
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { approveUser, createUser, deleteUser, getUsers } from '../services/api';
+import { approveUser, createUserByAdmin, deleteUser, getUsers } from '../services/api';
 import { IPaginateResponse, IUser, IUserCreate } from "../utils/sharedInterfaces";
 import { processHobbies } from '../utils/utilitiyFunctions';
 import { UserRow } from './UserRow';
@@ -270,7 +270,7 @@ export default function UsersTable() {
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
-  const createUserMutation = useMutation(createUser, {
+  const createUserMutation = useMutation(createUserByAdmin, {
     onSuccess: () => {
       queryClient.invalidateQueries("users")
       setModalState({ open: true, detail: "Successfully created user", severity: "success" })

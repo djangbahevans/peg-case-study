@@ -7,6 +7,8 @@ from app.api import deps
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm.session import Session
 
+from app.utils import generate_random_digits
+
 router = APIRouter()
 
 
@@ -63,12 +65,29 @@ def create_user(user_req: schemas.UserCreate, db: Session = Depends(deps.get_db)
     """
     Create new user without the need to be logged in.
     """
-    user = crud.user.get_by_username(db, username=user_req.username)
-    if user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this username already exists in the system",
-        )
+    while True:
+        user = crud.user.get_by_username(db, username=user_req.username)
+        if not user:
+            break
+        username = user_req.last_name.lower() + generate_random_digits()
+        user_req.username = username
+
+    user_in = schemas.UserCreate(**user_req.dict(exclude={"is_admin"}))
+    user = crud.user.create(db, obj_in=user_in)
+    return user
+
+
+@router.post("/by-admin", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
+def create_by_admin(user_req: schemas.UserCreate, db: Session = Depends(deps.get_db), current_user: schemas.User = Depends(deps.get_current_active_admin)) -> Any:
+    """
+    Create a user while logged in as admin
+    """
+    while True:
+        user = crud.user.get_by_username(db, username=user_req.username)
+        if not user:
+            break
+        username = user_req.last_name.lower() + generate_random_digits()
+        user_req.username = username
 
     user_in = schemas.UserCreate(**user_req.dict())
     user = crud.user.create(db, obj_in=user_in)

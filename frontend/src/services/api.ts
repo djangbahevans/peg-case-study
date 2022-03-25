@@ -116,6 +116,23 @@ export const createUser = async (user: IUserCreate): Promise<IUser> => {
   return data
 }
 
+export const createUserByAdmin = async (user: IUserCreate): Promise<IUser> => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/users/by-admin`, {
+    method: 'post',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    body: JSON.stringify({ ...user, })
+  })
+
+  const data: IUser | IError = await response.json()
+  if ("detail" in data)
+    throw new Error(`Code ${response.status}: ${data.detail}`)
+
+  return data
+}
+
 export const approveUser = async (username: string): Promise<IApproveUserResponse> => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/users/approve/${username}`, {
     method: 'put',
