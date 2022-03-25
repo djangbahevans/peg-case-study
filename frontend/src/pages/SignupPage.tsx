@@ -1,29 +1,31 @@
-import { Alert, Backdrop, Box, Button, CircularProgress, Grid, Paper, Snackbar, TextField, Typography } from "@mui/material"
+import { Alert, AlertColor, Backdrop, Box, Button, CircularProgress, Grid, Paper, Snackbar, TextField, Typography } from "@mui/material"
 import { useState } from "react"
 import { useMutation } from "react-query"
 import { createUser } from "../services/api"
-import { IError } from "../utils/sharedInterfaces"
 import { processHobbies } from "../utils/utilitiyFunctions"
 
 const SignupPage = () => {
   const [first_name, setFirstName] = useState("")
-  const [firstNameError] = useState("")
   const [last_name, setLastName] = useState("")
-  const [lastNameError] = useState("")
-  const [dobError] = useState("")
   const [dob, setDob] = useState("1993-08-09")
   const [address, setAddress] = useState("")
-  const [addressError] = useState("")
   const [national_id, setNationalID] = useState("")
-  const [nationalIDError] = useState("")
   const [hobbies, setHobbies] = useState("")
-  const [error] = useState("")
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
+    { open: false, detail: "", severity: "success" });
 
   const mutation = useMutation(createUser, {
     onSuccess: () => {
-      // TODO: TELL USER TO EXPECT AWAIT APPROVAL
+      setModalState({ open: true, detail: `Account created. Kindly await approval.`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: `Failed to create account. Please try again later`, severity: "error" })
     }
   })
+
+  const handleModalClose = () => {
+    setModalState({ ...modalState, open: false })
+  }
 
   return (
     <div style={{ position: 'relative', height: '100vh' }}>
@@ -45,17 +47,12 @@ const SignupPage = () => {
             Sign up
           </Typography>
           <Grid spacing={1} container>
-            <Grid item xs={12}>
-              <Typography color="error">{error}</Typography>
-            </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 label="First name"
                 variant="outlined"
                 type="text"
-                helperText={firstNameError}
                 onChange={e => { setFirstName(e.target.value) }}
-                error={!!firstNameError}
                 autoComplete="given-name"
                 required
                 fullWidth />
@@ -65,9 +62,7 @@ const SignupPage = () => {
                 label="Last name"
                 variant="outlined"
                 type="text"
-                helperText={lastNameError}
                 onChange={e => setLastName(e.target.value)}
-                error={!!lastNameError}
                 autoComplete="family-name"
                 required
                 fullWidth />
@@ -77,9 +72,7 @@ const SignupPage = () => {
                 label="Date of birth"
                 variant="outlined"
                 type="date"
-                helperText={dobError}
                 onChange={(e) => { setDob(e.target.value) }}
-                error={!!dobError}
                 value={dob}
                 autoComplete="bday"
                 required
@@ -91,9 +84,7 @@ const SignupPage = () => {
                 label="Address"
                 variant="outlined"
                 type="text"
-                helperText={addressError}
                 onChange={(e) => { setAddress(e.target.value) }}
-                error={!!addressError}
                 autoComplete="street-address"
                 required
                 fullWidth
@@ -104,9 +95,7 @@ const SignupPage = () => {
                 label="National ID"
                 variant="outlined"
                 type="text"
-                helperText={nationalIDError}
                 onChange={(e) => { setNationalID(e.target.value) }}
-                error={!!nationalIDError}
                 required
                 fullWidth
               />
@@ -116,10 +105,8 @@ const SignupPage = () => {
                 label="Hobbies (Comma separated)"
                 variant="outlined"
                 type="text"
-                helperText={nationalIDError}
                 onChange={(e) => { setHobbies(e.target.value) }}
                 value={hobbies}
-                error={!!nationalIDError}
                 required
                 fullWidth
               />
@@ -146,14 +133,9 @@ const SignupPage = () => {
         </Paper>
         <Button href="/login" sx={{ marginTop: 1 }} variant="text" fullWidth>Already have an account?</Button>
       </Box>
-      <Snackbar autoHideDuration={6000} open={mutation.isError} onClose={() => { mutation.reset() }}>
-        <Alert severity="error" sx={{ width: '100%' }} onClose={() => { mutation.reset() }}>
-          {mutation.error ? (mutation.error as IError).detail : ""}
-        </Alert>
-      </Snackbar>
-      <Snackbar autoHideDuration={6000} open={mutation.isSuccess} onClose={() => { mutation.reset() }}>
-        <Alert severity="success" sx={{ width: '100%' }} onClose={() => { mutation.reset() }}>
-          Successfully created an account. Please wait for approval.
+      <Snackbar autoHideDuration={6000} open={modalState.open} onClose={handleModalClose} >
+        <Alert severity={modalState.severity} sx={{ width: '100%' }} onClose={() => { mutation.reset() }}>
+          {modalState.detail}
         </Alert>
       </Snackbar>
     </div >
@@ -161,3 +143,4 @@ const SignupPage = () => {
 }
 
 export { SignupPage }
+

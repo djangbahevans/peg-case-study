@@ -1,32 +1,30 @@
-import { Alert, Backdrop, Box, Button, CircularProgress, Grid, Paper, Snackbar, TextField, Typography } from "@mui/material"
+import { Alert, AlertColor, Backdrop, Box, Button, CircularProgress, Grid, Paper, Snackbar, TextField, Typography } from "@mui/material"
 import { useState } from "react"
 import { useMutation } from "react-query"
 import { useAuth } from "../contexts"
-import { forgotPassword } from "../services/api"
-import { IError } from "../utils/sharedInterfaces"
 
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>("")
-  const [usernameError] = useState<string>("")
   const [password, setPassword] = useState<string>("")
-  const [passwordError] = useState<string>("")
-  const [error, setError] = useState<string>("")
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
+    { open: false, detail: "", severity: "success" });
 
   const { login } = useAuth()
 
-  const loginMutation = useMutation(login)
-  const forgotPasswordMutation = useMutation(forgotPassword, {
-    onError: (data) => {
-      setError((data as IError).detail)
-    }
+  const mutation = useMutation(login, {
+    onError: (e) => setModalState({ open: true, detail: `Could not log in. Please try again later.`, severity: "error" })
   })
+
+  const handleModalClose = () => {
+    setModalState({ ...modalState, open: false })
+  }
 
   return (
     <div style={{ position: 'relative', height: '100vh' }}>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loginMutation.isLoading || forgotPasswordMutation.isLoading}
+        open={mutation.isLoading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -44,18 +42,13 @@ const LoginPage = () => {
           </Typography>
           <Grid container>
             <Grid item xs={12}>
-              <Typography color="error" paragraph>{error}</Typography>
-            </Grid>
-            <Grid item xs={12}>
               <TextField
                 label="Username"
                 variant="outlined"
                 type="text"
-                helperText={usernameError}
                 sx={{ paddingBottom: 2 }}
                 onChange={(e) => { setUsername(e.target.value) }}
                 value={username}
-                error={!!usernameError}
                 autoComplete="username"
                 required
                 fullWidth
@@ -66,11 +59,9 @@ const LoginPage = () => {
                 label="Password"
                 variant="outlined"
                 type="password"
-                helperText={passwordError}
                 sx={{ paddingBottom: 2 }}
                 onChange={(e) => { setPassword(e.target.value) }}
                 value={password}
-                error={!!passwordError}
                 autoComplete="current-password"
                 required
                 fullWidth
@@ -80,9 +71,7 @@ const LoginPage = () => {
               <Button
                 variant="contained"
                 onClick={async () => {
-                  if (passwordError || usernameError) return
-
-                  loginMutation.mutateAsync({ username: username, password })
+                  mutation.mutateAsync({ username: username, password })
                 }}
                 fullWidth>
                 Login
@@ -92,9 +81,9 @@ const LoginPage = () => {
         </Paper>
         <Button sx={{ marginTop: 1 }} href="/signup" variant="text" fullWidth>Don't have an account?</Button>
       </Box>
-      <Snackbar autoHideDuration={6000} open={loginMutation.isError} onClose={() => { loginMutation.reset() }}>
-        <Alert severity="error" sx={{ width: '100%' }} onClose={() => { loginMutation.reset() }}>
-          {loginMutation.error ? (loginMutation.error as Error)?.message : ""}
+      <Snackbar autoHideDuration={6000} open={modalState.open} onClose={handleModalClose} >
+        <Alert severity={modalState.severity} sx={{ width: '100%' }} onClose={() => { mutation.reset() }}>
+          {modalState.detail}
         </Alert>
       </Snackbar>
     </div>

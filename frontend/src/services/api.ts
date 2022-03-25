@@ -1,4 +1,4 @@
-import { IError, IForgotPasswordResponse, ILoginResponse, ILoginVariables, IPaginateResponse, IPayment, IReservation, IReservationCreate, IPaymentCreate, IUpdateUserVariables, IUser, IUserCreate, IApproveUserResponse } from "../utils/sharedInterfaces"
+import { IApproveUserResponse, IError, ILoginResponse, ILoginVariables, IPaginateResponse, IPayment, IPaymentCreate, IReservation, IReservationCreate, IUser, IUserCreate } from "../utils/sharedInterfaces"
 
 
 // RESERVATION CRUD
@@ -187,29 +187,6 @@ export const getUserbyId = async (id: number): Promise<IUser> => {
   return data
 }
 
-export const updateUser = async ({ id, user }: IUpdateUserVariables): Promise<IUser> => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${id}`, {
-    method: "put",
-    mode: "cors",
-    headers: {
-      "authorization": `Bearer ${localStorage.getItem("access_token")}`,
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
-    body: JSON.stringify({
-      firstname: user.first_name,
-      lastname: user.last_name,
-      email: user.last_name,
-      password: user.dob
-    })
-  })
-
-  const data: IUser | IError = await response.json()
-  if ("detail" in data)
-    throw new Error(`Code ${response.status}: ${data.detail}`)
-
-  return data
-}
-
 export const deleteUser = async (id: number) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${id}`, {
     method: 'delete',
@@ -223,24 +200,6 @@ export const deleteUser = async (id: number) => {
     const data: IError = await response.json()
     throw new Error(`Code ${response.status}: ${data.detail}`)
   }
-}
-
-export const forgotPassword = async (email: string): Promise<IForgotPasswordResponse> => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/forgot-password`, {
-    method: 'post',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
-    body: JSON.stringify({
-      email
-    })
-  })
-
-  const data: IForgotPasswordResponse | IError = await response.json()
-  if ("detail" in data) throw new Error(`Code ${response.status}: ${data.detail}`)
-
-  else return data
 }
 
 export const login = async ({ username: email, password }: ILoginVariables) => {

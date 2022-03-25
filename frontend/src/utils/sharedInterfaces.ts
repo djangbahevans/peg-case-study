@@ -9,11 +9,6 @@ export type IReservation = {
   created_at: string
 } & IReservationCreate
 
-export const reservationDefaults: IReservationCreate = {
-  facility: "Swimming Pool",
-  time: (new Date()).toISOString()
-}
-
 export type IPaymentCreate = {
   amount: number
   username: string
@@ -64,8 +59,6 @@ export interface IUserCreate {
   is_admin: boolean
 }
 
-export interface IUserUpdate extends Partial<IUserCreate> { }
-
 export interface IAuthContext {
   isAuthenticated: boolean;
   loading: boolean;
@@ -85,15 +78,6 @@ export const authContextDefaults: IAuthContext = {
   loading: false,
   login: () => new Promise<ILoginResponse>(() => { }),
   logout: (): void => { }
-}
-
-export interface IUpdateUserVariables {
-  id: number
-  user: IUserUpdate
-}
-
-export interface IForgotPasswordResponse {
-  data: string
 }
 
 export interface ILoginVariables {

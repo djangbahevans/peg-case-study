@@ -1,7 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Alert, AlertColor, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -178,12 +178,18 @@ export default function PaymentsTable() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
+    { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
   const mutation = useMutation(createPayment, {
     onSuccess: () => {
-      setTimeout(() => queryClient.invalidateQueries("payments"), 2000)
+      queryClient.invalidateQueries("payments")
+      setModalState({ open: true, detail: `Reservation successfully booked.`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to book reservation", severity: "error" })
     }
   })
   const { data, isError, isLoading } = useQuery<IPaginateResponse<IPayment[]>, Error>(
@@ -245,6 +251,10 @@ export default function PaymentsTable() {
     setPage(0);
   };
 
+  const handleModalClose = () => {
+    setModalState({ ...modalState, open: false })
+  }
+
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
 
   if (isLoading)
@@ -295,6 +305,11 @@ export default function PaymentsTable() {
         </Paper>
       </Box>
       {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <Snackbar open={modalState.open} onClose={handleModalClose}>
+        <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
+          {modalState.detail}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

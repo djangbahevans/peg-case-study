@@ -265,7 +265,8 @@ export default function UsersTable() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>({ open: false, detail: "", severity: "success" });
+  const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
+    { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
