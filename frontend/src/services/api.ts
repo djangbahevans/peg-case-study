@@ -121,7 +121,8 @@ export const createUserByAdmin = async (user: IUserCreate): Promise<IUser> => {
     method: 'post',
     mode: 'cors',
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
+      'Content-Type': 'application/json;charset=UTF-8',
+      "authorization": `Bearer ${localStorage.getItem("access_token")}`
     },
     body: JSON.stringify({ ...user, })
   })
