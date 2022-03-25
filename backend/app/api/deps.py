@@ -16,7 +16,7 @@ def get_db():
     db: Session = SessionLocal()
     try:
         yield db
-    except Exception:
+    finally:
         db.close()
 
 
