@@ -42,6 +42,21 @@ export const createReservation = async (reservation: IReservationCreate): Promis
   return data
 }
 
+export const deleteReservation = async (id: number) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/reservations/${id}`, {
+    method: 'delete',
+    mode: "cors",
+    headers: {
+      "authorization": `Bearer ${localStorage.getItem("access_token")}`
+    }
+  })
+
+  if (response.status !== 204) {
+    const data: IError = await response.json()
+    throw new Error(`Code ${response.status}: ${data.detail}`)
+  }
+}
+
 // PAYMENTS CRUD
 export const getPayments = async (queryKey: any): Promise<IPaginateResponse<IPayment[]>> => {
   const page: number = queryKey["queryKey"][1]
