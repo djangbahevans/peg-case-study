@@ -35,6 +35,10 @@ export type IError = {
   detail: string
 }
 
+export type IApproveUserResponse = {
+  password: string
+}
+
 export interface IUser {
   id: number
   first_name: string

@@ -1,4 +1,4 @@
-import { IError, IForgotPasswordResponse, ILoginResponse, ILoginVariables, IPaginateResponse, IPayment, IReservation, IReservationCreate, IPaymentCreate, IUpdateUserVariables, IUser, IUserCreate } from "../utils/sharedInterfaces"
+import { IError, IForgotPasswordResponse, ILoginResponse, ILoginVariables, IPaginateResponse, IPayment, IReservation, IReservationCreate, IPaymentCreate, IUpdateUserVariables, IUser, IUserCreate, IApproveUserResponse } from "../utils/sharedInterfaces"
 
 
 // RESERVATION CRUD
@@ -101,7 +101,7 @@ export const createUser = async (user: IUserCreate): Promise<IUser> => {
   return data
 }
 
-export const approveUser = async (username: string): Promise<IUser> => {
+export const approveUser = async (username: string): Promise<IApproveUserResponse> => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/users/approve/${username}`, {
     method: 'put',
     mode: 'cors',
@@ -112,7 +112,7 @@ export const approveUser = async (username: string): Promise<IUser> => {
     // body: JSON.stringify({ ...user, })
   })
 
-  const data: IUser | IError = await response.json()
+  const data: IApproveUserResponse | IError = await response.json()
   if ("detail" in data)
     throw new Error(`Code ${response.status}: ${data.detail}`)
 

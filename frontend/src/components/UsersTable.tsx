@@ -2,7 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Alert, AlertColor, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import { format } from "date-fns";
 import { useState } from 'react';
@@ -39,7 +39,7 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
   const [address, setAddress] = useState<string>("");
   const [hobbies, setHobbies] = useState<string>("");
   const [national_id, setNationalId] = useState<string>("");
-  const [is_admin, setIsAdmin] = useState<boolean>(true)
+  const [is_admin, setIsAdmin] = useState<boolean>(false)
 
   return (
     <div>
@@ -109,7 +109,7 @@ const AddUserDialog = ({ handleClose, handleConfirm }: IAddUserDialogProps) => {
             onChange={e => setNationalId(e.target.value)}
             variant="standard"
           />
-          <FormControlLabel control={<Checkbox onChange={e => setIsAdmin(e.target.value === "on")} defaultChecked />} label="Admin?" />
+          <FormControlLabel control={<Checkbox onChange={e => setIsAdmin(e.target.value === "on")} />} label="Admin?" />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
@@ -264,17 +264,26 @@ export default function UsersTable() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [modalState, setModalState] = useState<{open: boolean, detail: string, severity: AlertColor}>({ open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
 
   const queryClient = useQueryClient()
   const createUserMutation = useMutation(createUser, {
     onSuccess: () => {
-      setTimeout(() => queryClient.invalidateQueries("users"), 2000)
+      queryClient.invalidateQueries("users")
+      setModalState({ open: true, detail: "Successfully created user", severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to create user", severity: "error" })
     }
   })
   const approveUserMutation = useMutation(approveUser, {
-    onSuccess: () => {
-      setTimeout(() => queryClient.invalidateQueries("users"), 2000)
+    onSuccess: (response) => {
+      queryClient.invalidateQueries("users")
+      setModalState({ open: true, detail: `User approved. Password is ${response.password}`, severity: "success" })
+    },
+    onError: () => {
+      setModalState({ open: true, detail: "Failed to approve user", severity: "error" })
     }
   })
   const { data, isError, isLoading } = useQuery<IPaginateResponse<IUser[]>, Error>(['users', page, rowsPerPage], getUsers)
@@ -311,6 +320,10 @@ export default function UsersTable() {
 
   const handleDialogClose = () => {
     setDialogOpen(false)
+  }
+
+  const handleModalClose = () => {
+    setModalState({ ...modalState, open: false })
   }
 
   const handleDialogOpen = () => {
@@ -387,6 +400,11 @@ export default function UsersTable() {
         </Paper>
       </Box>
       {dialogOpen && <AddUserDialog handleConfirm={handleDialogConfirm} handleClose={handleDialogClose} />}
+      <Snackbar open={modalState.open} autoHideDuration={6000} onClose={handleModalClose}>
+        <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
+          {modalState.detail}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
