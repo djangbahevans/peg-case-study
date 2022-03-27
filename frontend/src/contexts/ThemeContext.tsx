@@ -26,7 +26,9 @@ export const AppThemeProvider = ({ children }: IProviderProps) => {
 
   const value = {
     toggleTheme: () => {
-      setMode(mode === "light" ? "dark" : "light")
+      const new_mode = mode === "light" ? "dark" : "light"
+      setMode(new_mode)
+      localStorage.setItem("color-mode", new_mode)
     },
     mode
   }
