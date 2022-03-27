@@ -220,7 +220,7 @@ export const deleteUser = async (id: number) => {
   }
 }
 
-export const login = async ({ username: email, password }: ILoginVariables) => {
+export const login = async ({ username: email, password }: ILoginVariables): Promise<ILoginResponse> => {
   let formBody: string[] | string = [];
   formBody.push(`${encodeURIComponent("username")}=${encodeURIComponent(email)}`)
   formBody.push(`${encodeURIComponent("password")}=${encodeURIComponent(password)}`)
