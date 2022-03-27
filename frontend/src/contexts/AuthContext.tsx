@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react"
 import { useQuery } from "react-query"
-import { getMe, login as loginResponse } from "../services/api"
-import { authContextDefaults, IAuthContext, ILoginVariables, IUser } from "../utils/sharedInterfaces"
+import { getMe, login } from "../services/api"
+import { authContextDefaults, IAuthContext, ILoginVariables, IProviderProps, IUser } from "../utils/sharedInterfaces"
 
 
 const authContext = createContext<IAuthContext>(authContextDefaults)
@@ -45,7 +45,7 @@ const useAuth = () => {
   return {
     ...authInfo,
     login: async ({ username: email, password }: ILoginVariables) => {
-      const data = await loginResponse({ username: email, password })
+      const data = await login({ username: email, password })
 
       const { access_token } = data
       localStorage.setItem("access_token", access_token)
@@ -68,11 +68,12 @@ const useAuth = () => {
   };
 }
 
-export const AuthProvider = ({ children }: any) => {
+export const AuthProvider = ({ children }: IProviderProps) => {
   const auth = useAuth()
 
   return (
     <authContext.Provider value={auth}>
+      <div />
       {children}
     </authContext.Provider>
   )

@@ -1,3 +1,5 @@
+import { ReactChild } from "react"
+
 export type IReservationCreate = {
   facility: "Swimming Pool" | "Tennis Court" | "Gym" | "Conference Room"
   time: string
@@ -19,11 +21,6 @@ export type IPayment = {
   user_id: number
   amount: number
   created_at: string
-}
-
-export const paymentDefaults: IPaymentCreate = {
-  amount: 0,
-  username: ""
 }
 
 export type IError = {
@@ -72,14 +69,6 @@ export interface ILoginResponse {
   token_type: string
 }
 
-
-export const authContextDefaults: IAuthContext = {
-  isAuthenticated: false,
-  loading: false,
-  login: () => new Promise<ILoginResponse>(() => { }),
-  logout: (): void => { }
-}
-
 export interface ILoginVariables {
   username: string
   password: string
@@ -88,4 +77,30 @@ export interface ILoginVariables {
 export interface IPaginateResponse<T> {
   count: number
   data: T
+}
+
+export interface IProviderProps {
+  children?: ReactChild | ReactChild[]
+}
+
+export interface IThemeContext {
+  toggleTheme: () => void
+  mode: "light" | "dark"
+}
+
+export const paymentDefaults: IPaymentCreate = {
+  amount: 0,
+  username: ""
+}
+
+export const themeContextDefautls: IThemeContext = {
+  toggleTheme: () => { },
+  mode: "light"
+}
+
+export const authContextDefaults: IAuthContext = {
+  isAuthenticated: false,
+  loading: false,
+  login: () => new Promise<ILoginResponse>(() => { }),
+  logout: (): void => { }
 }
