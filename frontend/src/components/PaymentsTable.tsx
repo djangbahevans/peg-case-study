@@ -1,14 +1,14 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Alert, AlertColor, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Alert, AlertColor, AlertTitle, Box, Checkbox, DialogContentText, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { ConfirmDialog, FormDialog, PaymentRow } from '.';
 import { useAuth } from '../contexts';
 import { createPayment, getPayments } from '../services/api';
-import { IPaginateResponse, IPayment, IPaymentCreate } from "../utils/sharedInterfaces";
-import { PaymentRow } from './PaymentsRow';
+import { IPaginateResponse, IPayment } from "../utils/sharedInterfaces";
 
 interface IPaymentsTableProps {
   numSelected: number;
@@ -19,57 +19,6 @@ interface IPaymentsTableProps {
 interface IPaymentsTableToolbarProps {
   numSelected: number;
   onAdd: () => void;
-}
-
-interface IAddUserDialogProps {
-  onClose: () => void
-  onCancel?: () => void
-  onConfirm: ({ username, amount }: IPaymentCreate) => void
-}
-
-const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
-  const [username, setUsername] = useState<string>("");
-  const [amount, setAmount] = useState<string>("0.00");
-
-  return (
-    <div>
-      <Dialog open={true} onClose={onClose}>
-        <DialogTitle>Subscribe</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Make new payment
-          </DialogContentText>
-          <TextField
-            margin="dense"
-            id="name"
-            label="Username"
-            type="text"
-            fullWidth
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="Amount"
-            type="number"
-            fullWidth
-            inputProps={{
-              inputMode: 'numeric', min: "0.00", step: "0.01"
-            }}
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            variant="standard"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={() => { onConfirm({ username, amount: Math.floor(parseFloat(amount) * 100) }); onClose(); }}>Confirm</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
 }
 
 function PaymentTableHead(props: IPaymentsTableProps) {
@@ -173,23 +122,26 @@ const PaymentsTableToolbar = (props: IPaymentsTableToolbarProps) => {
   );
 };
 
-export default function PaymentsTable() {
+const PaymentsTable = () => {
   const rowsPerPageOptions = [10, 50, 100]
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [confDialogOpen, setConfDialogOpen] = useState(false);
   const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
     { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
+  const [username, setUsername] = useState<string>("");
+  const [amount, setAmount] = useState<string>("0.00");
 
   const queryClient = useQueryClient()
   const mutation = useMutation(createPayment, {
     onSuccess: () => {
       queryClient.invalidateQueries("payments")
-      setModalState({ open: true, detail: `Reservation successfully booked.`, severity: "success" })
+      setModalState({ open: true, detail: `Payment successfully made.`, severity: "success" })
     },
     onError: () => {
-      setModalState({ open: true, detail: "Failed to book reservation", severity: "error" })
+      setModalState({ open: true, detail: "Failed to make payment.", severity: "error" })
     }
   })
   const { data, isError, isLoading } = useQuery<IPaginateResponse<IPayment[]>, Error>(
@@ -227,19 +179,29 @@ export default function PaymentsTable() {
     setSelected(newSelected);
   };
 
-  const handleDialogClose = () => {
+  const handleDialogClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm")
+      setConfDialogOpen(true)
+    else {
+      setAmount("0.00")
+      setUsername("")
+    }
     setDialogOpen(false)
+  }
+
+  const handleConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm")
+      mutation.mutateAsync({
+        amount: Math.floor(parseFloat(amount) * 100),
+        username
+      })
+    setAmount("0.00")
+    setUsername("")
+    setConfDialogOpen(false)
   }
 
   const handleDialogOpen = () => {
     setDialogOpen(true)
-  }
-
-  const handleDialogConfirm = ({ username, amount }: IPaymentCreate) => {
-    mutation.mutateAsync({
-      amount,
-      username
-    })
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -304,7 +266,37 @@ export default function PaymentsTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <FormDialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogContentText>
+          Make new payment
+        </DialogContentText>
+        <TextField
+          margin="dense"
+          id="name"
+          label="Username"
+          type="text"
+          fullWidth
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="Amount"
+          type="number"
+          fullWidth
+          inputProps={{
+            inputMode: 'numeric', min: "0.00", step: "0.01"
+          }}
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+          variant="standard"
+        />
+      </FormDialog>
+      <ConfirmDialog open={confDialogOpen} title="Create payment" onClose={handleConfClose}>
+        Are you sure you want to create this payment?
+      </ConfirmDialog>
       <Snackbar open={modalState.open} onClose={handleModalClose}>
         <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
           {modalState.detail}

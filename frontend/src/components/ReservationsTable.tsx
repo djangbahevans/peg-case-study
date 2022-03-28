@@ -1,14 +1,14 @@
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import AddIcon from '@mui/icons-material/Add';
-import { AlertTitle, Alert, Box, Checkbox, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, AlertColor, Snackbar } from "@mui/material";
+import { Alert, AlertColor, AlertTitle, Box, Checkbox, DialogContentText, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
+import { format } from "date-fns";
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ReservationRow } from ".";
-import { getReservations, createReservation, deleteReservation } from '../services/api';
-import { IReservation, IPaginateResponse, IReservationCreate } from "../utils/sharedInterfaces";
-import { format } from "date-fns"
+import { ConfirmDialog, FormDialog, ReservationRow } from ".";
+import { createReservation, deleteReservation, getReservations } from '../services/api';
+import { IPaginateResponse, IReservation } from "../utils/sharedInterfaces";
 
 interface IReservationsTableProps {
   numSelected: number;
@@ -20,59 +20,6 @@ interface IReservationsTableToolbarProps {
   numSelected: number;
   onAdd: () => void;
   onDelete: () => void;
-}
-
-interface IAddUserDialogProps {
-  onClose: () => void
-  onCancel?: () => void
-  onConfirm: ({ facility, time }: IReservationCreate) => void
-}
-
-const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
-  const [time, setTime] = useState<string>(format(new Date(), "yyyy-MM-dd'T'hh:mm"));
-  const [facility, setFacility] = useState<"Swimming Pool" | "Tennis Court" | "Gym" | "Conference Room">("Swimming Pool");
-
-  const options = ["Swimming Pool", "Tennis Court", "Gym", "Conference Room"]
-
-  return (
-    <div>
-      <Dialog open={true} onClose={onClose}>
-        <DialogTitle>Subscribe</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Make a new reservation
-          </DialogContentText>
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Facility</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={facility}
-              label="Age"
-              // @ts-ignore
-              onChange={(e) => setFacility(e.target.value)}
-            >
-              {options.map(option => <MenuItem key={option} value={option}>{option}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <TextField
-            margin="dense"
-            id="name"
-            label="Time"
-            type="datetime-local"
-            fullWidth
-            value={time}
-            onChange={e => setTime(e.target.value)}
-            variant="standard"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={() => { onConfirm({ facility, time }); onClose(); }}>Confirm</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
 }
 
 function ReservationsTableHead(props: IReservationsTableProps) {
@@ -175,14 +122,20 @@ const ReservationsTableToolbar = (props: IReservationsTableToolbarProps) => {
   );
 };
 
-export default function ReservationsTable() {
+const ReservationsTable = () => {
   const rowsPerPageOptions = [10, 50, 100]
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createConfDialog, setCreateConfDialog] = useState(false);
+  const [deleteConfDialog, setDeleteConfDialog] = useState(false);
   const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
     { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
+  const [time, setTime] = useState<string>(format(new Date(), "yyyy-MM-dd'T'hh:mm"));
+  const [facility, setFacility] = useState<"Swimming Pool" | "Tennis Court" | "Gym" | "Conference Room">("Swimming Pool");
+
+  const options = ["Swimming Pool", "Tennis Court", "Gym", "Conference Room"]
 
   const queryClient = useQueryClient()
   const createReservationMutation = useMutation(createReservation, {
@@ -235,19 +188,42 @@ export default function ReservationsTable() {
     setSelected(newSelected);
   };
 
-  const handleDialogClose = () => {
+  const handleDialogClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm") {
+      setCreateConfDialog(true)
+    }
+    else {
+      setFacility("Swimming Pool")
+      setTime(format(new Date(), "yyyy-MM-dd'T'hh:mm"))
+    }
     setDialogOpen(false)
+  }
+
+  const handleCreateConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm")
+      createReservationMutation.mutateAsync({
+        facility,
+        time
+      })
+      setCreateConfDialog(false)
+      setTime(format(new Date(), "yyyy-MM-dd'T'hh:mm"))
+      setFacility("Swimming Pool")
+  }
+
+  const handleDeleteConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm") {
+      reservations!.forEach(reservation => {
+        if (!selected.includes(reservation.id)) return
+        deleteReservationMutation.mutateAsync(reservation.id)
+        setSelected([])
+      })
+    }
+
+    setDeleteConfDialog(false)
   }
 
   const handleDialogOpen = () => {
     setDialogOpen(true)
-  }
-
-  const handleDialogConfirm = ({ facility, time }: IReservationCreate) => {
-    createReservationMutation.mutateAsync({
-      facility,
-      time
-    })
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -260,11 +236,7 @@ export default function ReservationsTable() {
   };
 
   const handleDelete = () => {
-    reservations!.forEach(reservation => {
-      if (!selected.includes(reservation.id)) return
-      deleteReservationMutation.mutateAsync(reservation.id)
-      setSelected([])
-    })
+    setDeleteConfDialog(true)
   }
 
   const handleModalClose = () => {
@@ -320,7 +292,40 @@ export default function ReservationsTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <FormDialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogContentText>
+          Make a new reservation
+        </DialogContentText>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Facility</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={facility}
+            label="Age"
+            // @ts-ignore
+            onChange={(e) => setFacility(e.target.value)}
+          >
+            {options.map(option => <MenuItem key={option} value={option}>{option}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <TextField
+          margin="dense"
+          id="name"
+          label="Time"
+          type="datetime-local"
+          fullWidth
+          value={time}
+          onChange={e => setTime(e.target.value)}
+          variant="standard"
+        />
+      </FormDialog>
+      <ConfirmDialog title={"Create reservation"} open={createConfDialog} onClose={handleCreateConfClose}>
+        Are you sure you want to create this reservation?
+      </ConfirmDialog>
+      <ConfirmDialog title={"Delete reservation"} open={deleteConfDialog} onClose={handleDeleteConfClose}>
+        Are you sure you want to delete this reservation?
+      </ConfirmDialog>
       <Snackbar open={modalState.open} onClose={handleModalClose}>
         <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
           {modalState.detail}
@@ -331,3 +336,4 @@ export default function ReservationsTable() {
 }
 
 export { ReservationsTable };
+

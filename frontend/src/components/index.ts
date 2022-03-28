@@ -1,4 +1,6 @@
 export * from './Appbar'
+export * from './ConfirmDialog'
+export * from './FormDialog'
 export * from './Loading'
 export * from './PaymentsRow'
 export * from './PaymentsTable'

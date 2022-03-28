@@ -2,15 +2,14 @@ import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Alert, AlertColor, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Alert, AlertColor, AlertTitle, Box, Checkbox, DialogContentText, FormControlLabel, IconButton, Paper, Skeleton, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
-import { format } from "date-fns";
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { ConfirmDialog, FormDialog, UserRow } from '.';
 import { approveUser, createUserByAdmin, deleteUser, getUsers } from '../services/api';
-import { IPaginateResponse, IUser, IUserCreate } from "../utils/sharedInterfaces";
-import { processHobbies } from '../utils/utilitiyFunctions';
-import { UserRow } from './UserRow';
+import { createUserDefaults, IPaginateResponse, IUser, IUserCreate } from "../utils/sharedInterfaces";
+import { arrayToCommaStrings, commaStringsToArray } from '../utils/utilitiyFunctions';
 
 interface IUsersTableProps {
   numSelected: number;
@@ -23,113 +22,6 @@ interface IUsersTableToolbarProps {
   onAdd: () => void;
   onApprove: () => void;
   onDelete: () => void;
-}
-
-interface IAddUserDialogProps {
-  onClose: () => void
-  onCancel?: () => void
-  onConfirm: ({
-    first_name, last_name, dob, address, hobbies, national_id
-  }: IUserCreate) => void
-}
-
-const AddUserDialog = ({ onClose, onConfirm }: IAddUserDialogProps) => {
-  const [first_name, setFirstName] = useState<string>("");
-  const [last_name, setLastName] = useState<string>("");
-  const [dob, setDoB] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  const [address, setAddress] = useState<string>("");
-  const [hobbies, setHobbies] = useState<string>("");
-  const [national_id, setNationalId] = useState<string>("");
-  const [is_admin, setIsAdmin] = useState<boolean>(false)
-
-  return (
-    <div>
-      <Dialog open={true} onClose={onClose}>
-        <DialogTitle>Subscribe</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Create a new user
-          </DialogContentText>
-          <TextField
-            margin="dense"
-            id="name"
-            label="First Name"
-            type="text"
-            fullWidth
-            value={first_name}
-            onChange={e => setFirstName(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="Last Name"
-            type="text"
-            fullWidth
-            value={last_name}
-            onChange={e => setLastName(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="Date of Birth"
-            type="date"
-            fullWidth
-            value={dob}
-            onChange={e => setDoB(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="Address"
-            type="text"
-            fullWidth
-            value={address}
-            onChange={e => setAddress(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="Hobbies (Comma separated)"
-            type="text"
-            fullWidth
-            value={hobbies}
-            onChange={e => setHobbies(e.target.value)}
-            variant="standard"
-          />
-          <TextField
-            margin="dense"
-            id="name"
-            label="National ID"
-            type="text"
-            fullWidth
-            value={national_id}
-            onChange={e => setNationalId(e.target.value)}
-            variant="standard"
-          />
-          <FormControlLabel control={<Checkbox onChange={e => setIsAdmin(e.target.value === "on")} />} label="Admin?" />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={() => {
-            onConfirm({
-              first_name,
-              last_name,
-              dob,
-              address,
-              hobbies: processHobbies(hobbies),
-              national_id,
-              is_admin
-            });
-            onClose();
-          }}>Confirm</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
 }
 
 function UsersTableHead(props: IUsersTableProps) {
@@ -260,14 +152,18 @@ const UsersTableToolbar = (props: IUsersTableToolbarProps) => {
   );
 };
 
-export default function UsersTable() {
+const UsersTable = () => {
   const rowsPerPageOptions = [10, 50, 100]
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [page, setPage] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createConfDialog, setCreateConfDialog] = useState(false);
+  const [deleteConfDialog, setDeleteConfDialog] = useState(false);
+  const [approveConfDialog, setApproveConfDialog] = useState(false);
   const [modalState, setModalState] = useState<{ open: boolean, detail: string, severity: AlertColor }>(
     { open: false, detail: "", severity: "success" });
   const [rowsPerPage, setRowsPerPage] = useState(Math.min(...rowsPerPageOptions));
+  const [formData, setFormData] = useState<IUserCreate>(createUserDefaults)
 
   const queryClient = useQueryClient()
   const createUserMutation = useMutation(createUserByAdmin, {
@@ -329,8 +225,11 @@ export default function UsersTable() {
     setSelected(newSelected);
   };
 
-  const handleDialogClose = () => {
+  const handleDialogClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm")
+      createUserMutation.mutateAsync(formData)
     setDialogOpen(false)
+    setFormData(createUserDefaults)
   }
 
   const handleModalClose = () => {
@@ -339,10 +238,6 @@ export default function UsersTable() {
 
   const handleDialogOpen = () => {
     setDialogOpen(true)
-  }
-
-  const handleDialogConfirm = (user_props: IUserCreate) => {
-    createUserMutation.mutateAsync({ ...user_props })
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -354,20 +249,44 @@ export default function UsersTable() {
     setPage(0);
   };
 
+
+  const handleCreateConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm")
+      createUserMutation.mutateAsync(formData)
+    setCreateConfDialog(false)
+    setFormData(createUserDefaults)
+  }
+
+  const handleDeleteConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm") {
+      users!.forEach(user => {
+        if (!selected.includes(user.id)) return
+        deleteUserMutation.mutateAsync(user.id)
+        setSelected([])
+      })
+    }
+
+    setDeleteConfDialog(false)
+  }
+
+  const handleApproveConfClose = (value?: "cancel" | "confirm") => {
+    if (value === "confirm") {
+      users!.forEach(user => {
+        if (!selected.includes(user.id)) return
+        if (!user.is_active)
+          approveUserMutation.mutateAsync(user.username)
+      })
+    }
+
+    setApproveConfDialog(false)
+  }
+
   const handleApprove = () => {
-    users!.forEach(user => {
-      if (!selected.includes(user.id)) return
-      if (!user.is_active)
-        approveUserMutation.mutateAsync(user.username)
-    })
+    setApproveConfDialog(true)
   }
 
   const handleDelete = () => {
-    users!.forEach(user => {
-      if (!selected.includes(user.id)) return
-      deleteUserMutation.mutateAsync(user.id)
-      setSelected([])
-    })
+    setDeleteConfDialog(true)
   }
 
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
@@ -418,7 +337,83 @@ export default function UsersTable() {
           />
         </Paper>
       </Box>
-      {dialogOpen && <AddUserDialog onConfirm={handleDialogConfirm} onClose={handleDialogClose} />}
+      <FormDialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogContentText>
+          Create a new user
+        </DialogContentText>
+        <TextField
+          margin="dense"
+          id="name"
+          label="First Name"
+          type="text"
+          fullWidth
+          value={formData.first_name}
+          onChange={e => setFormData(s => ({ ...s, first_name: e.target.value }))}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="Last Name"
+          type="text"
+          fullWidth
+          value={formData.last_name}
+          onChange={e => setFormData(s => ({ ...s, last_name: e.target.value }))}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="Date of Birth"
+          type="date"
+          fullWidth
+          value={formData.dob}
+          onChange={e => setFormData(s => ({ ...s, dob: e.target.value }))}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="Address"
+          type="text"
+          fullWidth
+          value={formData.address}
+          onChange={e => setFormData(s => ({ ...s, address: e.target.value }))}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="Hobbies (Comma separated)"
+          type="text"
+          fullWidth
+          value={arrayToCommaStrings(formData.hobbies)}
+          onChange={e => setFormData(s => ({ ...s, hobbies: commaStringsToArray(e.target.value) }))}
+          variant="standard"
+        />
+        <TextField
+          margin="dense"
+          id="name"
+          label="National ID"
+          type="text"
+          fullWidth
+          value={formData.national_id}
+          onChange={e => setFormData(s => ({ ...s, national_id: e.target.value }))}
+          variant="standard"
+        />
+        <FormControlLabel
+          control={<Checkbox
+            onChange={e => setFormData(s => ({ ...s, is_admin: e.target.checked }))} />} label="Admin?" />
+      </FormDialog>
+      <ConfirmDialog title={"Approve user"} open={approveConfDialog} onClose={handleApproveConfClose}>
+        Are you sure you want to approve this user?
+      </ConfirmDialog>
+      <ConfirmDialog title={"Create user"} open={createConfDialog} onClose={handleCreateConfClose}>
+        Are you sure you want to create this user?
+      </ConfirmDialog>
+      <ConfirmDialog title={"Delete user"} open={deleteConfDialog} onClose={handleDeleteConfClose}>
+        Are you sure you want to delete this user?
+      </ConfirmDialog>
       <Snackbar open={modalState.open} onClose={handleModalClose}>
         <Alert onClose={handleModalClose} severity={modalState.severity} sx={{ width: '100%' }}>
           {modalState.detail}

@@ -1,3 +1,4 @@
+import { format } from "date-fns"
 import { ReactChild } from "react"
 
 export type IReservationCreate = {
@@ -91,6 +92,16 @@ export interface IThemeContext {
 export const paymentDefaults: IPaymentCreate = {
   amount: 0,
   username: ""
+}
+
+export const createUserDefaults: IUserCreate = {
+  first_name: "",
+  last_name: "",
+  dob: format(new Date(), "yyyy-MM-dd"),
+  address: "",
+  hobbies: [],
+  national_id: "",
+  is_admin: false
 }
 
 export const themeContextDefautls: IThemeContext = {

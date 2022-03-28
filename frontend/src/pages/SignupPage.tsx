@@ -2,7 +2,7 @@ import { Alert, AlertColor, Backdrop, Box, Button, CircularProgress, Grid, Paper
 import { useState } from "react"
 import { useMutation } from "react-query"
 import { createUser } from "../services/api"
-import { processHobbies } from "../utils/utilitiyFunctions"
+import { commaStringsToArray } from "../utils/utilitiyFunctions"
 
 const SignupPage = () => {
   const [first_name, setFirstName] = useState("")
@@ -120,7 +120,7 @@ const SignupPage = () => {
                     last_name,
                     dob,
                     address: address,
-                    hobbies: processHobbies(hobbies),
+                    hobbies: commaStringsToArray(hobbies),
                     national_id,
                     is_admin: false
                   })
